@@ -61,6 +61,8 @@ import gzip
 from threading import Thread
 from subprocess import call, Popen, PIPE
 
+import csv
+
 # ----------------- CLASSES --------------------
 
 # Class: SystemValues
@@ -118,6 +120,7 @@ class SystemValues:
 	dmesgstart = 0.0
 	dmesgfile = ''
 	ftracefile = ''
+	csvfile = ""
 	htmlfile = 'output.html'
 	result = ''
 	rtcwake = True
@@ -1350,11 +1353,24 @@ class Data:
 		sysvals.vprint('            test end: %f' % self.end)
 	def deviceChildrenAllPhases(self, devname):
 		devlist = []
+		path=os.path.abspath(os.curdir)
+		sysvals.csvfile= './summary_phase_dev.csv'
+		csvfile=file(sysvals.csvfile, 'wb')
+		writer=csv.writer(csvfile)
+		writer.writerow(['Phase','Dev','Duration(ms)'])
 		for phase in self.phases:
 			list = self.deviceChildren(devname, phase)
+			writer.writerow([phase, '' ,(self.dmesg[phase]['end']-self.dmesg[phase]['start'])*1000 ])
 			for dev in list:
 				if dev not in devlist:
 					devlist.append(dev)
+
+			devlistinfo=self.dmesg[phase]['list']
+			for devname in devlistinfo:
+				devinfo = devlistinfo[devname]
+				writer.writerow([ phase, devname, (devinfo['end']-devinfo['start'])*1000])
+		csvfile.close()
+		sysvals.vprint('csvfile write end')
 		return devlist
 	def masterTopology(self, name, list, depth):
 		node = DeviceNode(name, depth)
