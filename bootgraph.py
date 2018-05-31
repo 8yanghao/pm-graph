@@ -34,6 +34,8 @@ from datetime import datetime, timedelta
 from subprocess import call, Popen, PIPE
 import sleepgraph as aslib
 
+import csv
+
 # ----------------- CLASSES --------------------
 
 # Class: SystemValues
@@ -49,6 +51,7 @@ class SystemValues(aslib.SystemValues):
 	dmesgfile = ''
 	ftracefile = ''
 	htmlfile = 'bootgraph.html'
+        csvfile = "bootgraph.csv"
 	testdir = ''
 	kparams = ''
 	result = ''
@@ -559,6 +562,9 @@ def createBootGraph(data):
 	# draw the device timeline
 	num = 0
 	devstats = dict()
+	csvfile = open(sysvals.csvfile, 'w')
+        writer = csv.writer(csvfile)
+        writer.writerow(['Dev','Duration(ms)'])
 	for phase in data.phases:
 		list = data.dmesg[phase]['list']
 		for devname in sorted(list):
@@ -576,6 +582,7 @@ def createBootGraph(data):
 			devtl.html += devtl.html_device.format(dev['id'],
 				devname+length+phase+'_mode', left, top, '%.3f'%height,
 				width, devname, ' '+cls, '')
+                        writer.writerow([devname, (dev['end']-dev['start'])*1000])
 			rowtop = devtl.phaseRowTop(0, phase, dev['row'])
 			height = '%.6f' % (devtl.rowH / 2)
 			top = '%.6f' % (rowtop + devtl.scaleH + (devtl.rowH / 2))
@@ -605,6 +612,7 @@ def createBootGraph(data):
 					top, height, width, title, dev['id']+cg.id)
 				num += 1
 
+        csvfile.close()
 	# draw the time scale, try to make the number of labels readable
 	devtl.createTimeScale(t0, tMax, tTotal, 'boot')
 	devtl.html += '</div>\n'
