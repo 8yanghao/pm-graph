@@ -1370,7 +1370,6 @@ class Data:
 				devinfo = devlistinfo[devname]
 				writer.writerow([ phase, devname, (devinfo['end']-devinfo['start'])*1000])
 		csvfile.close()
-		sysvals.vprint('csvfile write end')
 		return devlist
 	def masterTopology(self, name, list, depth):
 		node = DeviceNode(name, depth)
